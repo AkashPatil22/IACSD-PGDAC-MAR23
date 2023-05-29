@@ -1,0 +1,867 @@
+Views and indexes:-
+
+1.	create all given tables Ans:-
+ 
+mysql> create table vehicle
+
+-> (
+
+-> vid int primary key,
+
+-> vname varchar(20),
+
+-> vprice double(9,2),
+
+-> description varchar(20)
+
+-> );//
+
+Query OK, 0 rows affected, 1 warning (0.10 sec)
+
+
+
+mysql> insert into vehicle values(1,'Activa',80000,'Two')// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into vehicle values(2,'Santro',800000,'Three')// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into vehicle values(3,'Motorbike',100000,'Two')// Query OK, 1 row affected (0.02 sec)
+
+
+
+
+
+2.	create index on vehicle table based on price Ans:-mysql> create table customer1
+-> (
+
+-> custid int primary key,
+
+-> cname varchar(20),
+ 
+-> caddress varchar(20)
+
+-> )//
+
+Query OK, 0 rows affected (0.08 sec)
+
+mysql> insert into customer1 values(1,'Nilima','Pimpari')// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into customer1 values(2,'Ganesh','Pune')// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into customer1 values(3,'Pankaj','Mumbai')// Query OK, 1 row affected (0.02 sec)
+mysql> create table salesman1
+
+-> (
+
+-> sid int primary key,
+
+-> sname varchar(20),
+
+-> saddress varchar(20)
+
+-> )//
+
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> insert into salesman1 values(10,'Rajesh','Mumbai')// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into salesman1 values(11,'Seema','Pune')// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into salesman1 values(13,'Rakhi','Pune')//
+ 
+Query OK, 1 row affected (0.02 sec)
+
+
+
+mysql> create table cust_vehicle
+
+-> (
+
+-> custid int,
+
+-> vid int,
+
+-> sid int,
+
+-> buy_price double(9,2),
+
+-> primary key (custid,vid),
+
+-> foreign key (custid) references customer1(custid),
+
+-> foreign key (vid) references vehicle (vid),
+
+-> foreign key (sid) references salesman1 (sid)
+
+->
+
+-> )//
+
+Query OK, 0 rows affected, 1 warning (0.13 sec) mysql> insert into cust_vehicle values(1,1,10,75000)// Query OK, 1 row affected (0.03 sec)
+
+
+mysql> insert into cust_vehicle values(1,2,10,790000)// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into cust_vehicle values(2,3,11,80000)// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into cust_vehicle values(3,3,11,75000)//
+ 
+Query OK, 1 row affected (0.02 sec)
+
+
+
+mysql> insert into cust_vehicle values(3,2,10,800000)// Query OK, 1 row affected (0.02 sec)
+
+
+
+
+mysql> create index price_vehicle
+
+-> on vehicle(vprice)//
+
+Query OK, 0 rows affected (0.22 sec) Records: 0 Duplicates: 0 Warnings: 0
+
+
+3.	find all customer name,vehicle name, salesman name, discount earn by all customer mysql> select c.cname,v.vname,s.sname,(v.vprice-cv.buy_price) "Discount"
+-> from customer1 c, vehicle v, salesman1 s,cust_vehicle cv
+
+-> where cv.custid=c.custid and cv.vid=v.vid and cv.sid=s.sid//
+
+
+4.	find all customer name,vehicle name,salesman name for all salesman who stays in pune
+
+Ans:-
+ 
+mysql> select c.cname,v.vname,s.sname
+
+-> from customer1 c, vehicle v, salesman1 s, cust_vehicle cv
+
+-> where cv.custid=c.custid and cv.vid=v.vid and cv.sid=s.sid//
+
+5.	find how many customers bought motor bike Ans:-
+mysql> select count(*)
+
+-> from cust_vehicle cv
+
+-> where cv.vid=(select v.vid
+
+-> from vehicle v
+
+-> where v.vname='Motorbike')//
+
+
+
+6.	create a view find_discount which displays output
+ 
+-------to create view create view find_discount as
+select cname,vname,price,buying_price,price-buying_price “discount” from customer c inner join cust_vehicle cv on c.custid=cv.cid inner join vehicle v on v.vid=cv.vid
+
+
+--------to display discount
+select * from find_discount;
+
+
+Ans:-
+
+
+mysql> create view find_discount
+-> as
+-> select c.cname,v.vname,v.vprice,cv.buy_price,(v.vprice-cv.buy_price) "Discount"
+-> from customer1 c, vehicle v,salesman1 s,cust_vehicle cv
+-> where cv.vid=v.vid and cv.custid=c.custid and cv.sid=s.sid// Query OK, 0 rows affected (0.04 sec)
+
+mysql> select *
+-> from find_discount//
+ 
+ 
+
+
+
+7.	find all customer name, vehicle name, salesman name, discount earn by all customer Ans:-mysql> select c.cname,v.vname,s.sname,(v.vprice-cv.buy_price) "Discount"
+-> from customer1 c, vehicle v, salesman1 s,cust_vehicle cv
+
+-> where cv.custid=c.custid and cv.vid=v.vid and cv.sid=s.sid//
+
+
+
+8.	create view my_hr to display empno,ename,job,comm for all employees who earn commission
+Ans:-mysql> create view my_hr
+-> as
+-> select empno,ename,job,comm
+-> from emp
+ 
+-> where comm is not null// Query OK, 0 rows affected (0.02 sec)
+
+
+9.	create view mgr30 to display all employees from department 30 Ans:-
+mysql> create view mgr30
+
+-> as
+
+-> select *
+
+-> from emp
+
+-> where deptno=30//
+
+Query OK, 0 rows affected (0.01 sec)
+
+
+
+mysql> select * from mgr30//
+ 
+ 
+
+
+
+10.	insert 3 employees in view mgr30 check whether insertion is possible Ans:-
+
+
+mysql> insert into mgr30 values(1001,'akash','manager',7007,'1986-11-12',5250,750,30)// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into mgr30 values(1002,'aditya','clerk',7075,'1984-05-20',4000,300,30)// Query OK, 1 row affected (0.03 sec)
+mysql> insert into mgr30 values(1005,'Ravina','Analyst',7080,'1990-12-25',8000,1000,30)// Query OK, 1 row affected (0.01 sec)
+
+
+mysql> select * from mgr30//
+ 
+ 
+
+11.	insert 3 records in dept and display all records from dept Ans:-
+mysql> insert into dept values(10,'Development','San Fransisco')// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into dept values(30,'Testing','Vegas')// Query OK, 1 row affected (0.02 sec)
+
+
+mysql> insert into dept values(50,'Automation','Dubai')// Query OK, 1 row affected (0.01 sec)
+ 
+ 
+
+
+
+
+
+
+
+
+12.	use rollback command check what happens Ans:-
+mysql> rollback//
+
+Query OK, 0 rows affected (0.00 sec)
+
+
+
+
+13.	do the following
+
+insert row in emp with empno 100 insert row in emp with empno 101 insert row in emp with empno 102 add savepoint A
+ 
+insert row in emp with empno 103 insert row in emp with empno 104 insert row in emp with empno 105 add savepoint B
+
+delete emp with empno 100 delete emp with emp no 104 rollback upto svaepoint B
+
+check what all records will appear in employee table rollback upto A check what all records will appear in employee table commit all changes
+
+check what all records will appear in employee table check whether you can roll back the contents.
+
+Ans:-
+
+mysql> insert into emp values(100,'Shubham','Clerk',7698,'2000-11- 25',20000,500,
+
+20);
+
+
+
+
+mysql> insert into emp values(101,'Akash','Clerk',7698,'2005-11- 25',20000,500,20
+
+);
+
+
+
+
+mysql> insert into emp values(102,'Abhi','Clerk',7698,'2005-11- 25',20000,500,20)
+
+;
+ 
+
+
+
+mysql> savepoint a;
+
+
+
+
+
+
+mysql> insert into emp values(103,'Deepak','Manager',7698,'2020-11- 25',80000,500
+
+,50);
+
+
+
+
+mysql> insert into emp values(104,'Akanksha','Manager',7698,'2020-10- 25',80000,5
+
+00,40);
+
+
+
+
+mysql> insert into emp values(105,'Om','Manager',7698,'2020-10- 25',80000,500,30)
+
+;
+
+
+
+
+
+
+mysql> savepoint b;
+
+Query OK, 0 rows affected (0.00 sec)
+ 
+mysql> delete from emp
+
+-> where empno=100;
+
+
+
+
+mysql> delete from emp
+
+-> where empno=104;
+
+
+
+
+mysql> rollback to b;
+
+Query OK, 0 rows affected (0.00 sec)
+
+
+
+mysql> select * from emp;
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+| EMPNO | ENAME	| JOB	| MGR | HIREDATE | SAL	| COMM	| DEPTNO
+
+|
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+| 7369 | SMITH	| CLERK	| 7902 | 1980-12-17 | 1300.00 |	NULL |	20
+
+|
+
+| 7499 | ALLEN	| SALESMAN | 7698 | 1981-02-20 | 1300.00 | 300.00 |	30
+
+|
+ 
+| 7521 | WARD	| SALESMAN | 7698 | 1981-02-22
+| 1300.00 | 500.00 |	30
+
+|
+
+| 7566 | JONES	| MANAGER | 7839 | 1981-04-02 | 2975.00 |	NULL |	20
+
+|
+
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28
+| 1300.00 | 1400.00 |	30
+
+|
+
+| 7698 | BLAKE	| MANAGER | 7839 | 1981-05-01 | 1300.00 |	NULL |	30
+
+|
+
+| 7782 | CLARK	| MANAGER | 7839 | 1981-06-09 | 2450.00 |	NULL |	10
+
+|
+
+| 7788 | SCOTT	| ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20
+
+|
+
+| 7839 | KING	| PRESIDENT | NULL | 1981-11-17 | 5000.00 |	NULL |	10
+
+|
+
+| 7844 | TURNER | SALESMAN  | 7698 | 1981-09-08
+| 1300.00 |	0.00 |	30
+
+|
+
+| 7876 | ADAMS	| CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |		20
+
+|
+
+| 7900 | JAMES	| CLERK	| 7698 | 1981-12-03 | 1300.00 |	NULL |	30
+
+|
+ 
+| 7902 | FORD	| ANALYST | 7566 | 1981-12-03 | 3000.00 |	NULL |	20
+
+|
+
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1300.00 |	NULL |	10
+
+|
+
+| 1000 | Bhagyesh | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	30
+
+|
+
+| 1000 | Ashish | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	20
+
+|
+
+| 1002 | Suyash | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	20
+
+|
+
+| 100 | Shubham | Clerk	| 7698 | 2000-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+| 101 | Akash	| Clerk	| 7698 | 2005-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+| 102 | Abhi	| Clerk		| 7698 | 2005-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+| 103 | Deepak | Manager | 7698 | 2020-11-25 | 80000.00 | 500.00 |	50
+
+|
+
+| 104 | Akanksha | Manager | 7698 | 2020-10-25 | 80000.00 | 500.00 |	40
+
+|
+ 
+| 105 | Om	| Manager | 7698 | 2020-10-25 | 80000.00 | 500.00 |	30
+
+|
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+
+
+
+rollback upto A
+
+check what all records will appear in employee table
+
+
+
+
+mysql> rollback to a;
+
+Query OK, 0 rows affected (0.00 sec)
+
+
+
+mysql> select * from emp;
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+| EMPNO | ENAME	| JOB	| MGR | HIREDATE | SAL	| COMM	| DEPTNO
+
+|
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+| 7369 | SMITH	| CLERK	| 7902 | 1980-12-17 | 1300.00 |	NULL |	20
+
+|
+ 
+| 7499 | ALLEN	| SALESMAN | 7698 | 1981-02-20 | 1300.00 | 300.00 |	30
+
+|
+
+| 7521 | WARD	| SALESMAN | 7698 | 1981-02-22
+| 1300.00 | 500.00 |	30
+
+|
+
+| 7566 | JONES	| MANAGER | 7839 | 1981-04-02 | 2975.00 |	NULL |	20
+
+|
+
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28
+| 1300.00 | 1400.00 |	30
+
+|
+
+| 7698 | BLAKE	| MANAGER | 7839 | 1981-05-01 | 1300.00 |	NULL |	30
+
+|
+
+| 7782 | CLARK	| MANAGER | 7839 | 1981-06-09 | 2450.00 |	NULL |	10
+
+|
+
+| 7788 | SCOTT	| ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20
+
+|
+
+| 7839 | KING	| PRESIDENT | NULL | 1981-11-17 | 5000.00 |	NULL |	10
+
+|
+
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08
+| 1300.00 |	0.00 |	30
+
+|
+
+| 7876 | ADAMS	| CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |		20
+
+|
+ 
+| 7900 | JAMES	| CLERK	| 7698 | 1981-12-03 | 1300.00 |	NULL |	30
+
+|
+
+| 7902 | FORD	| ANALYST | 7566 | 1981-12-03 | 3000.00 |	NULL |	20
+
+|
+
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1300.00 |	NULL |	10
+
+|
+
+| 1000 | Bhagyesh | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	30
+
+|
+
+| 1000 | Ashish | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	20
+
+|
+
+| 1002 | Suyash | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	20
+
+|
+
+| 100 | Shubham | Clerk	| 7698 | 2000-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+|   101 | Akash	| Clerk	| 7698 | 2005-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+| 102 | Abhi	| Clerk		| 7698 | 2005-11-25 | 20000.00 | 500.00 |	20
+
+|
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+ 
+
+commit all changes
+
+check what all records will appear in employee table
+
+
+
+
+mysql> commit;
+
+Query OK, 0 rows affected (0.07 sec)
+
+
+
+mysql> select * from emp;
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+| EMPNO | ENAME	| JOB	| MGR | HIREDATE | SAL	| COMM	| DEPTNO
+
+|
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+| 7369 | SMITH	| CLERK	| 7902 | 1980-12-17 | 1300.00 |	NULL |	20
+
+|
+
+| 7499 | ALLEN	| SALESMAN | 7698 | 1981-02-20 | 1300.00 | 300.00 |	30
+
+|
+
+| 7521 | WARD	| SALESMAN | 7698 | 1981-02-22
+| 1300.00 | 500.00 |	30
+
+|
+ 
+| 7566 | JONES	| MANAGER | 7839 | 1981-04-02 | 2975.00 |	NULL |	20
+
+|
+
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28
+| 1300.00 | 1400.00 |	30
+
+|
+
+| 7698 | BLAKE	| MANAGER | 7839 | 1981-05-01 | 1300.00 |	NULL |	30
+
+|
+
+| 7782 | CLARK	| MANAGER | 7839 | 1981-06-09 | 2450.00 |	NULL |	10
+
+|
+
+| 7788 | SCOTT	| ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20
+
+|
+
+| 7839 | KING	| PRESIDENT | NULL | 1981-11-17 | 5000.00 |	NULL |	10
+
+|
+
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08
+| 1300.00 |	0.00 |	30
+
+|
+
+| 7876 | ADAMS	| CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |		20
+
+|
+
+| 7900 | JAMES	| CLERK	| 7698 | 1981-12-03 | 1300.00 |	NULL |	30
+
+|
+
+| 7902 | FORD	| ANALYST | 7566 | 1981-12-03 | 3000.00 |	NULL |	20
+
+|
+ 
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1300.00 |	NULL |	10
+
+|
+
+| 1000 | Bhagyesh | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	30
+
+|
+
+| 1000 | Ashish | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	20
+
+|
+
+| 1002 | Suyash | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	20
+
+|
+
+| 100 | Shubham | Clerk	| 7698 | 2000-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+| 101 | Akash	| Clerk	| 7698 | 2005-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+| 102 | Abhi	| Clerk		| 7698 | 2005-11-25 | 20000.00 | 500.00 |	20
+
+|
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+
+
+check whether you can roll back the contents.
+
+
+
+mysql> rollback;
+
+Query OK, 0 rows affected (0.00 sec)
+ 
+
+mysql> select * from emp;
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+| EMPNO | ENAME	| JOB	| MGR | HIREDATE | SAL	| COMM	| DEPTNO
+
+|
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+| 7369 | SMITH	| CLERK	| 7902 | 1980-12-17 | 1300.00 |	NULL |	20
+
+|
+
+| 7499 | ALLEN	| SALESMAN | 7698 | 1981-02-20 | 1300.00 | 300.00 |	30
+
+|
+
+| 7521 | WARD	| SALESMAN | 7698 | 1981-02-22
+| 1300.00 | 500.00 |	30
+
+|
+
+| 7566 | JONES	| MANAGER | 7839 | 1981-04-02 | 2975.00 |	NULL |	20
+
+|
+
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28
+| 1300.00 | 1400.00 |	30
+
+|
+
+| 7698 | BLAKE	| MANAGER | 7839 | 1981-05-01 | 1300.00 |	NULL |	30
+
+|
+ 
+| 7782 | CLARK	| MANAGER | 7839 | 1981-06-09 | 2450.00 |	NULL |	10
+
+|
+
+| 7788 | SCOTT	| ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20
+
+|
+
+| 7839 | KING	| PRESIDENT | NULL | 1981-11-17 | 5000.00 |	NULL |	10
+
+|
+
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08
+| 1300.00 |	0.00 |	30
+
+|
+
+| 7876 | ADAMS	| CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |		20
+
+|
+
+| 7900 | JAMES	| CLERK	| 7698 | 1981-12-03 | 1300.00 |	NULL |	30
+
+|
+
+| 7902 | FORD	| ANALYST | 7566 | 1981-12-03 | 3000.00 |	NULL |	20
+
+|
+
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1300.00 |	NULL |	10
+
+|
+
+| 1000 | Bhagyesh | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	30
+
+|
+
+| 1000 | Ashish | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	20
+
+|
+ 
+| 1002 | Suyash | Developer | 7698 | 2022-12-05 | 50000.00 |	0.00 |	20
+
+|
+
+| 100 | Shubham | Clerk	| 7698 | 2000-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+| 101 | Akash	| Clerk	| 7698 | 2005-11-25 | 20000.00 | 500.00 |	20
+
+|
+
+|   102 | Abhi	| Clerk		| 7698 | 2005-11-25 | 20000.00 | 500.00 |	20
+
+|
+
++	+	+	+	+	+	+ 	
+ 	+ 	
+
+-+
+
+
+
+
+14.	create a procedure getMin(deptno,minsal) to find minimum salary of given table.
+
+Ans:-
+
+st.emp.DEPTNO'; this is incompatible with sql_mode=only_full_group_by mysql> delimiter //
+mysql> create procedure get_min2(pdeptno int,out pmin float)
+
+-> begin
+
+-> select deptno,min(sal) into pdeptno,pmin
+
+-> from emp
+
+-> where deptno=pdeptno
+
+-> group by deptno;
+
+-> end//
+ 
+Query OK, 0 rows affected (0.01 sec)
+
+
+
+mysql> delimiter;
+
+-> ^C
+
+mysql> call get_min2(10,@min)// Query OK, 1 row affected (0.00 sec)
+
+
+mysql> select @min//
+
++	+
+
+| @min |
+
++	+
+
+| 1300 |
+
++	+
+
+1 row in set (0.00 sec)
+ 
+ 
