@@ -1,0 +1,357 @@
+Topic	create Table, DML , subquery and joins
+
+
+1.	Practice creating following tables MySQL syntax:
+create table mydept_DBDA (
+deptid int primary key,
+dname varchar(20) not null unique, dloc varchar(20)
+)
+-
+
+
+
+
+
+Oracle syntax:
+
+
+create table mydept_DBDA (
+deptid number primary key,
+dname varchar2(20) not null unique, dloc varchar2(20)
+)
+
+
+insert into mydept_DBDA values(30,'Purchase','Mumbai'); MySql syntax:
+create table myemployee (
+empno int primary key, fname varchar(15) not null,
+ 
+mname varchar(15),
+lname varchar(15) not null,
+sal float(9,2) check(sal >=1000), doj date,
+passportnum varchar(15) unique, deptno int,
+constraint fk_deptno foreign key(deptno) references mydept_DBDA(deptid) on delete set null
+on update cascade
+)
+
+
+Oracle syntax:
+create table myemployee (
+empno number(5) primary key, fname varchar2(15) not null, mname varchar2(15),
+lname varchar2(15) not null,
+sal number(9,2) check(sal >=1000), doj date default sysdate, passportnum varchar2(15) unique,
+deptno number constraint fk_deptno references mydept_DBDA(deptid) on delete cascade
+)
+ 
+ 
+
+
+
+2.	Create following tables Student, Course Student (sid,sname) ---------------- sid ---primary key Course(cid,cname)-------------- cid ---primary key Marks(studid,courseid,marks) Sample data for marks table studid,courseid,marks 1 1 99 1 3 98 2 1 95 2 2 97 create table marks( studid number, courseid number, marks number, constraint pk primary key(studid,courseid), constraint fk_sid foreign key (studid) references student(sid) on delete cascade, constraint fk_cid foreign key (courseid) references course(cid) )
+
+Ans create table student(
+
+-> sid int primary key,
+
+-> sname varchar (20)); Query OK, 0 rows affected (0.05 sec)
+ 
+create table Course(
+
+-> cid int primary key,
+
+-> cname varchar (20)); Query OK, 0 rows affected (0.04 sec)
+
+
+mysql> create table Marks(
+
+-> studid int,
+
+-> courseid int,
+
+-> marks int,
+
+-> constraint pk primary key (studid,courseid),
+
+-> foreign key fk_sid (studid) references student (sid),
+
+-> foreign key fk_cid (courseid) references course (cid)
+
+-> );
+
+Query OK, 0 rows affected (0.10 sec)
+
+ 
+ 
+
+
+
+3.	Create empty table emp10 with table structure same as emp table. create table emp10 as ( select * from emp where 1=2; )
+
+Ans :
+
+create table emp10 as
+
+-> (select * from emp
+
+-> where 1=2);
+
+Query OK, 0 rows affected (0.09 sec)
+
+
+
+ 
+
+4.	change job of smith to senior clerk Ans :
+update emp3
+
+-> set job='senior cleark'
+
+-> where ename='smith'; Query OK, 1 row affected (0.02 sec)
+ 
+
+
+
+5.	increase salary of all employees by 15% if they are earning some commission
+
+
+
+38. list all employees with sal>smith's sal Ans : select *
+-> from emp
+
+-> where sal>(select sal
+ 
+-> from emp
+
+-> where ename='smith');
+
+
+6.	list all employees who are working in smith's department Ans : select *
+-> from emp
+
+-> where deptno=(select deptno
+
+-> from emp
+
+-> where ename='smith');
+ 
+
+ 
+
+7.	list all employees with sal < rajan's sal and salary > revati's sal Ans : select *
+-> from emp
+
+-> where sal<any(select sal
+
+-> from emp
+
+-> where ename in ('rajan','revati')); Empty set (0.02 sec)
+
+
+7. delete all employees working in alan's department Ans delete from emp2
+-> where deptno=(select e.deptno
+
+-> from (select *from emp2)e
+
+-> where e.ename='allen'); Query OK, 6 rows affected (0.03 sec)
+ 
+ 
+
+9.	change salary of Alan to the salary of Miller.
+
+Ans : update emp3
+
+->	set sal=(select e.sal
+
+->	from (select * from emp3 ) e
+
+->	where e.ename='miller') where ename='allen'; Query OK, 1 row affected (0.03 sec)
+ 
+
+10.	change salary of all emplees who working in Ward’s department to the salary of Miller.
+ 
+Ans :
+
+mysql> update emp3
+
+->	set sal=(select e.sal
+
+->	from (select * from emp3 ) e
+
+->	where ename='miller') where deptno=(select b.deptno
+
+-> from (select * from emp3) b
+
+-> where b.ename='ward'); Query OK, 5 rows affected (0.02 sec)
+ 
+
+
+
+11.	list all employees with salary > either Smith's salary or alan's sal Ans :
+mysql> select * from emp where sal>any(select sal from emp where ename='smith' or ename='allen');
+ 
++	+	+	+	+	+	+	+	+
+| EMPNO | ENAME | job	| MGR | HIREDATE | SAL	| COMM	| DEPTNO |
++	+	+	+	+	+	+	+	+
+| 7499 | ALLEN | SALESMAN | 7698 | 1981-02-20 | 1840.00 | 300.00 |	30 |
+| 7521 | WARD | SALESMAN | 7698 | 1981-02-22 | 1437.50 | 500.00 |	30 |
+| 7566 | JONES | MANAGER | 7839 | 1981-04-02 | 2975.00 |	NULL |	20 |
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28 | 1437.50 | 1400.00 |	30 |
+| 7698 | BLAKE | MANAGER | 7839 | 1981-05-01 | 2850.00 |	NULL |	30 |
+| 7782 | CLARK | MANAGER | 7839 | 1981-06-09 | 2450.00 |	NULL |	10 |
+| 7788 | SCOTT | ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20 |
+| 7839 | KING | PRESIDENT | NULL | 1981-11-17 | 5000.00 |	NULL |	10 |
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1725.00 |	0.00 |	30 |
+| 7876 | ADAMS | CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |	20 |
+| 7900 | JAMES | CLERK	| 7698 | 1981-12-03 | 950.00 |	NULL |	30 |
+| 7902 | FORD | ANALYST   | 7566 | 1981-12-03 | 3000.00 |	NULL |	20 |
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1300.00 |	NULL |	10 |
++	+	+	+	+	+	+	+	+ 13 rows in set (0.00 sec)
+
+
+
+
+
+
+12.	list all employees who earn more than average sal of dept 10 Ans :
+select *
+
+-> from emp
+
+-> where sal >(select avg(sal)
+
+-> from emp
+
+-> where deptno=10);
+ 
+ 
+
+13.	list all employees who earn more than average sal of Alan's department Ans : select *
+->	from emp
+
+->	where sal>(select avg(sal)
+
+->	from emp
+
+->	where deptno=(select deptno
+
+->	from emp
+
+->	where ename = 'allen'));
+
+
+14.	list all employees who are working in purchase department Ans :
+ 
+mysql> select * from emp where deptno=(select deptno from dept d where d.dname="SALES");
++	+	+	+	+	+	+	+	+
+| EMPNO | ENAME | job	| MGR | HIREDATE | SAL	| COMM	| DEPTNO |
++	+	+	+	+	+	+	+	+
+| 7499 | ALLEN | SALESMAN | 7698 | 1981-02-20 | 1840.00 | 300.00 |	30 |
+| 7521 | WARD | SALESMAN | 7698 | 1981-02-22 | 1437.50 | 500.00 |	30 |
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28 | 1437.50 | 1400.00 |	30 |
+| 7698 | BLAKE | MANAGER | 7839 | 1981-05-01 | 2850.00 |	NULL |	30 |
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1725.00 |	0.00 |	30 |
+| 7900 | JAMES | CLERK	| 7698 | 1981-12-03 | 950.00 |	NULL |	30 |
++	+	+	+	+	+	+	+	+ 6 rows in set (0.00 sec)
+
+mysql> select * from emp where deptno=(select deptno from dept where dname="SALES");
++	+	+	+	+	+	+	+	+
+| EMPNO | ENAME | job	| MGR | HIREDATE | SAL	| COMM	| DEPTNO |
++	+	+	+	+	+	+	+	+
+| 7499 | ALLEN | SALESMAN | 7698 | 1981-02-20 | 1840.00 | 300.00 |	30 |
+| 7521 | WARD | SALESMAN | 7698 | 1981-02-22 | 1437.50 | 500.00 |	30 |
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28 | 1437.50 | 1400.00 |	30 |
+| 7698 | BLAKE | MANAGER | 7839 | 1981-05-01 | 2850.00 |	NULL |	30 |
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1725.00 |	0.00 |	30 |
+| 7900 | JAMES | CLERK	| 7698 | 1981-12-03 | 950.00 |	NULL |	30 |
++	+	+	+	+	+	+	+	+ 6 rows in set (0.00 sec)
+
+
+
+
+15.	list all employees who earn more than average salary of their own department Ans :select *
+->	from emp b
+
+->	where sal>(select avg(sal)
+
+->	from emp a
+
+->	where a.deptno=b.deptno);
+ 
+
+
+
+
+16.	list all employees who earn sal < than their managers salary Ans :mysql> select *
+->	from emp b
+
+->	where sal< any(select sal
+
+->	from emp a
+
+->	where a.mgr=b.mgr);
+
+
+17.	list all employees who are earning more than average salary of their job Ans :mysql> select *
+->	from emp b
+
+->	where sal> any(select avg(sal)
+
+->	from emp a
+
+->	where a.job=b.job);
+ 
+ 
+
+
+
+18.	display employee name and department Ans :mysql> select ename,dname
+-> from emp e ,dept d
+
+-> where e.deptno=d.deptno;
+
+
+
+19.	display empno,name,department name and grade (use emp,dept and salgrade table)
+ 
+Ans:-mysql> select empno , ename, dname, grade
+
+-> from emp e ,dept d ,salgrade s
+
+-> where e.deptno= d.deptno and e.sal between s.losal and s.hisal;
+
+
+
+20.	list all employees number,name, mgrno and manager name Ans : mysql> select e.empno,e.ename,e.mgr,m.ename 'manager'
+-> from emp e,emp m
+
+-> where m.empno=e.mgr
+
+-> ;
+ 
+ 
+
+
+
+
+
+21.	create following tables and solve following questions(primary keys are marked in yellow)
+
+foreign keys are marked in green product(pid,pname,price,qty,cid,sid) salesman (sid,sname,address) category(cid,cnam,descritpion)
+1.	list all product name,their category name and name of a person, who sold that product
+ 
+ 
+
+2.	list all product name and salesman name for all salesman who stays in pune mysql> select pname,sname
+-> from product p,salesman s
+
+-> where p.sid=s.sid and s.address='pune';
+
+
+
+3.	list all product name and category name Ans:-
+ 
+mysql> select pname,cname
+
+-> from product p,category c
+
+-> where p.cid=c.cid;
+
