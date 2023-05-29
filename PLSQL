@@ -1,0 +1,649 @@
+PLSQL:-
+
+Solve the following
+1.	write a procedure to insert record into employee table.
+
+the procedure should accept empno, ename, sal, job, hiredate as input parameter write insert statement inside procedure insert_rec to add one record into table
+
+create procedure insert_rec(peno int,pnm varchar(20),psal decimal(9,2),pjob varchar(20),phiredate date)
+begin
+insert into emp(empno,ename,sal,job,hiredate) values(peno,pnm,psal,pjob,phiredate) end//
+
+
+
+
+2.	write a procedure to delete record from employee table. the procedure should accept empno as input parameter.
+write delete statement inside procedure delete_emp to delete one record from emp table
+
+
+ 
+
+3.	write a procedure to display empno,ename,deptno,dname for all employees with sal
+
+> given salary. pass salary as a parameter to procedure
+
+Ans:-
+mysql> delimiter //
+ 
+mysql> create procedure dis_emp5(psal double(9,2))
+-> begin
+-> select empno,ename,e.deptno ,d.dname ,e.sal
+-> from emp e,dept d
+-> where e.deptno=d.deptno and sal>psal ;
+-> end//
+Query OK, 0 rows affected, 1 warning (0.02 sec)
+
+4.	write a procedure to find min,max,avg of salary and number of employees in the given deptno.
+deptno --à in parameter
+min,max,avg and count ---à out type parameter
+execute procedure and then display values min,max,avg and count
+
+Ans:-
+mysql> delimiter //
+mysql> create procedure dis_val1( in pdeptno int ,out pmin float,out pmax float,
+->	out pavg float ,out pcount int )
+-> begin
+-> select deptno, min(sal),max(sal),avg(sal),count(sal) into pdeptno,pmin,pmax,pavg,pcount
+->	from emp
+-> where deptno=pdeptno
+ 
+-> group by deptno;
+-> end//
+Query OK, 0 rows affected (0.02 sec)
+
+
+5.	write a procedure to display all pid,pname,cid,cname and salesman name(use product,category and salesman table)
+Ans:-
+mysql> delimiter //
+mysql>	create procedure dis_pro()
+-> begin
+-> select p.pid,p.pname,p.cid,c.cname,s.sname
+-> from product p,category c,salesman s
+-> where p.cid=c.cid and p.sid=s.sid;
+-> end//
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> call dis_pro()//
++	+	+	+	+	+
+| pid | pname | cid | cname	| sname	|
++	+	+	+	+	+
+| 10 | lays	|	1 | chips	| joy	|
+| 14 | pepsi |	2 | cold drink | shah	|
+| 15 | miranda |	2 | cold drink | sam	|
+| 11 | kurkure |	3 | snacks	| cuteface |
+ 
+| 12 | nachos |	3 | snacks	| modi	|
++	+	+	+	+	+ 5 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.02 sec)
+
+
+
+
+6.	write a procedure to display all vehicles bought by a customer. pass cutome name as a parameter.(use vehicle,salesman,custome and relation table)
+
+
+
+
+
+
+
+
+7.	Write a procedure that displays the following information of all emp Empno,Name,job,Salary,Status,deptno
+ 
+
+Note: - Status will be (Greater, Lesser or Equal) respective to average salary of their own department. Display an error message Emp table is empty if there is no matching record.
+
+Ans:-
+
+mysql> delimiter //
+
+mysql> create procedure dis_info()
+
+-> begin
+
+->	select e.empno,e.ename,e.job,e.sal,e.deptno,case when
+
+->	(select avg(sal) from emp group by deptno having deptno=e.deptno)>e.sal then "lesser" when
+
+-> (select avg(sal) from emp group by deptno having deptno=e.deptno)<e.sal then "greater"
+
+-> else "equal" end status from emp e;
+
+-> end//
+
+Query OK, 0 rows affected (0.02 sec)
+ 
+ 
+
+
+
+
+
+
+8.	Write a procedure to update salary in emp table based on following rules. Exp< =35 then no Update
+
+Exp> 35 and <=38 then 20% of salary
+
+Exp> 38 then 25% of salary
+
+
+
+Ans:
+
+delimiter //
+create function retnexp2(hdate date) returns int begin
+
+declare pexp int default 0;
+ 
+set pexp=(floor(datediff(curdate(),hdate)/365)); return pexp;
+
+
+end//
+
+
+
+
+
+delimiter //
+create procedure updtsal() begin
+declare finished int default 0; declare vhdate date;
+declare updsal_cur cursor for select hiredate from emp; declare continue handler for not found set finished = 1;
+open updsal_cur; l1: loop
+fetch updsal_cur into vhdate;
+
+if finished = 1 then leave l1;
+end if;
+
+
+if retnexp2(vhdate)>40 and retnexp2(vhdate)<=42 then update emp set sal=sal*1.2 where hiredate=vhdate;
+
+elseif retnexp2(vhdate)>42 then
+update emp set sal=sal*1.25 where hiredate=vhdate;
+
+
+end if; end loop;
+
+close updsal_cur; end //
+delimiter ;
+ 
+
+
+
+mysql> create procedure updtsal()
+-> begin
+->	declare finished int default 0;
+->	declare vhdate date;
+->	declare updsal_cur cursor for select hiredate from emp;
+->	declare continue handler for not found set finished = 1;
+->
+->	open updsal_cur;
+->
+->	l1: loop
+->	fetch updsal_cur into vhdate;
+->
+->	if finished = 1 then
+->	leave l1;
+->	end if;
+->
+->
+-> if retnexp2(vhdate)>40 and retnexp2(vhdate)<=42 then
+-> update emp set sal=sal*1.2 where hiredate=vhdate;
+->
+-> elseif retnexp2(vhdate)>42 then
+-> update emp set sal=sal*1.25 where hiredate=vhdate;
+->
+->
+-> end if;
+->	end loop;
+->
+-> close updsal_cur;
+-> end //
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> delimiter ;
+mysql> select * from emp;
++	+	+	+	+	+	+	+	+
+| EMPNO | ENAME	| JOB	| MGR | HIREDATE   | SAL	| COMM	| DEPTNO |
++	+	+	+	+	+	+	+	+
+| 7369 | SMITH	| CLERK	| 7902 | 1980-12-17 |   800.00 |	NULL |	20 |
+| 7499 | ALLEN	| SALESMAN | 7698 | 1981-02-20 | 1600.00 | 300.00 |	30 |
+ 
+|	7521 | WARD	| SALESMAN | 7698 | 1981-02-22 | 1250.00 | 500.00 |	30 |
+|	7566 | JONES	| MANAGER   | 7839 | 1981-04-02 | 2975.00 |	NULL |	20 |
+|	7654 | MARTIN | SALESMAN | 7698 | 1981-09-28 | 1250.00 | 1400.00 |	30 |
+|	7698 | BLAKE	| MANAGER   | 7839 | 1981-05-01 | 2850.00 |	NULL |	30 |
+|	7782 | CLARK	| MANAGER   | 7839 | 1981-06-09 | 2450.00 |	NULL |	10 |
+|	7788 | SCOTT	| ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20 |
+|	7839 | KING	| PRESIDENT | NULL | 1981-11-17 | 5000.00 |	NULL |	10 |
+|	7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1500.00 |	0.00 |	30 |
+|	7876 | ADAMS	| CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |	20 |
+|	7900 | JAMES	| CLERK	| 7698 | 1981-12-03 |   950.00 |	NULL |	30 |
+|	7902 | FORD	| ANALYST | 7566 | 1981-12-03 | 3000.00 |	NULL |	20 |
+|	7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1300.00 |	NULL |	10 |
+|	4561 | sour_abh | president | NULL | 1981-04-02 | 99999.00 | 1000.00 |	50 |
++	+	+	+	+	+	+	+	+ 15 rows in set (0.00 sec)
+
+mysql> call updtsal;
+ERROR 1264 (22003): Out of range value for column 'SAL' at row 15 mysql> delete from emp where ename='sour_abh';
+Query OK, 1 row affected (0.04 sec)
+
+mysql> call updtsal;
+Query OK, 0 rows affected (0.39 sec)
+
+mysql> select * from emp;
++	+	+	+	+	+	+	+	+
+| EMPNO | ENAME | JOB	| MGR | HIREDATE | SAL	| COMM	| DEPTNO |
++	+	+	+	+	+	+	+	+
+| 7369 | SMITH | CLERK	| 7902 | 1980-12-17 | 1152.00 |	NULL |	20 |
+| 7499 | ALLEN | SALESMAN | 7698 | 1981-02-20 | 2304.00 | 300.00 |	30 |
+| 7521 | WARD | SALESMAN  | 7698 | 1981-02-22 | 1800.00 | 500.00 |	30 |
+| 7566 | JONES | MANAGER | 7839 | 1981-04-02 | 3570.00 |	NULL |	20 |
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28 | 1500.00 | 1400.00 |	30 |
+| 7698 | BLAKE | MANAGER | 7839 | 1981-05-01 | 3420.00 |	NULL |	30 |
+| 7782 | CLARK | MANAGER   | 7839 | 1981-06-09 | 2940.00 |	NULL |	10 |
+| 7788 | SCOTT | ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20 |
+| 7839 | KING | PRESIDENT | NULL | 1981-11-17 | 6000.00 |	NULL |	10 |
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1800.00 |	0.00 |	30 |
+| 7876 | ADAMS | CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |	20 |
+| 7900 | JAMES | CLERK	| 7698 | 1981-12-03 | 1368.00 |	NULL |	30 |
+| 7902 | FORD | ANALYST   | 7566 | 1981-12-03 | 4320.00 |	NULL |	20 |
+ 
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1560.00 |	NULL |	10 |
++	+	+	+	+	+	+	+	+ 14 rows in set (0.00 sec)
+
+
+
+
+
+
+9.	Write a procedure and a function.
+
+Function: write a function to calculate number of years of experience of employee.(note: pass hiredate as a parameter)
+
+
+Procedure: Capture the value returned by the above function to calculate the additional allowance for the emp based on the experience.
+
+
+Additional Allowance = Year of experience x 3000 Calculate the additional allowance
+
+
+and store Empno, ename,Date of Joining, and Experience in years and additional allowance in Emp_Allowance table.
+
+create table emp_allowance( empno int,
+
+ename varchar(20), hiredate date, experience int, allowance decimal(9,2));
+
+
+
+Ans:
+ 
+delimiter //
+create function retnexp2(hdate date) returns int begin
+
+declare pexp int default 0;
+set pexp=(floor(datediff(curdate(),hdate)/365)); return pexp;
+
+
+end// delimiter ;
+
+
+
+
+mysql> create table emp_allowance((select
+*,floor(datediff(curdate(),hiredate)/365) exp from emp)); Query OK, 15 rows affected (0.25 sec)
+Records: 15 Duplicates: 0 Warnings: 0
+
+mysql> alter table emp_allowance add column allowance decimal(9,2); Query OK, 0 rows affected (0.10 sec)
+Records: 0 Duplicates: 0 Warnings: 0
+
+
+
+mysql> select * from emp_allowance;
++	+	+	+	+	+	+	+	+	+	+
+| EMPNO | ENAME	| JOB	| MGR | HIREDATE | SAL	| COMM	| DEPTNO | exp |
+allowance |
++	+	+	+	+	+	+	+	+	+	+
+| 7369 | SMITH	| CLERK	| 7902 | 1980-12-17 | 800.00 |	NULL |	20 | 42 |	NULL |
+| 7499 | ALLEN	| SALESMAN | 7698 | 1981-02-20 | 1600.00 | 300.00 |	30 | 42 |	NULL |
+| 7521 | WARD	| SALESMAN  | 7698 | 1981-02-22 | 1250.00 | 500.00 |	30 | 42 |	NULL |
+| 7566 | JONES	| MANAGER | 7839 | 1981-04-02 | 2975.00 |	NULL |	20 | 42 |	NULL |
+| 7654 | MARTIN | SALESMAN  | 7698 | 1981-09-28 | 1250.00 | 1400.00 |	30 | 41 |	NULL |
+| 7698 | BLAKE	| MANAGER | 7839 | 1981-05-01 | 2850.00 |	NULL |	30 | 41 |	NULL |
+| 7782 | CLARK	| MANAGER | 7839 | 1981-06-09 | 2450.00 |	NULL |	10 | 41 |	NULL |
+| 7788 | SCOTT	| ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20 | 40 |	NULL |
+| 7839 | KING	| PRESIDENT | NULL | 1981-11-17 | 5000.00 |	NULL |	10 | 41 |	NULL |
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1500.00 |	0.00 |	30 | 41 |	NULL |
+| 7876 | ADAMS	| CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |	20 | 40 |	NULL |
+| 7900 | JAMES	| CLERK	| 7698 | 1981-12-03 | 950.00 |	NULL |	30 | 41 |	NULL |
+| 7902 | FORD	| ANALYST | 7566 | 1981-12-03 | 3000.00 |	NULL |	20 | 41 |	NULL |
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1300.00 |	NULL |	10 | 41 |	NULL |
+ 
+| 4561 | sour_abh | president | NULL | 1981-04-02 | 99999.00 | 1000.00 |	50 | 42 |	NULL |
++	+	+	+	+	+	+	+	+	+	+
+15 rows in set (0.00 sec) mysql>
+
+mysql> create procedure updtallwnc11()
+-> begin
+->	declare finished int default 0;
+->	declare vhdate date;
+->	declare updall_cur cursor for select hiredate from emp_allowance;
+->	declare continue handler for not found set finished = 1;
+->
+->	open updall_cur;
+->
+->	l1: loop
+->	fetch updall_cur into vhdate;
+->
+->	if finished = 1 then
+->	leave l1;
+->	end if;
+->
+->	update emp_allowance
+->	set allowance = retnexp2(vhdate)*3000
+->	where hiredate = vhdate;
+->	end loop;
+->
+->	close updall_cur;
+-> end //
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> delimiter ;
+mysql> call updtallwnc11;
+Query OK, 0 rows affected (0.23 sec)
+
+mysql> select * from emp_allowance;
++	+	+	+	+	+	+	+	+	+	+
+| EMPNO | ENAME	| JOB	| MGR | HIREDATE | SAL	| COMM	| DEPTNO | exp |
+allowance |
++	+	+	+	+	+	+	+	+	+	+
+| 7369 | SMITH	| CLERK	| 7902 | 1980-12-17 | 800.00 |	NULL |	20 | 42 | 126000.00 |
+ 
+| 7499 | ALLEN	| SALESMAN | 7698 | 1981-02-20 | 1600.00 | 300.00 |	30 | 42 | 126000.00 |
+| 7521 | WARD	| SALESMAN  | 7698 | 1981-02-22 | 1250.00 | 500.00 |	30 | 42 | 126000.00 |
+| 7566 | JONES	| MANAGER | 7839 | 1981-04-02 | 2975.00 |	NULL |	20 | 42 | 126000.00 |
+| 7654 | MARTIN | SALESMAN  | 7698 | 1981-09-28 | 1250.00 | 1400.00 |	30 | 41 | 123000.00 |
+| 7698 | BLAKE	| MANAGER | 7839 | 1981-05-01 | 2850.00 |	NULL |	30 | 41 | 123000.00 |
+| 7782 | CLARK	| MANAGER | 7839 | 1981-06-09 | 2450.00 |	NULL |	10 | 41 | 123000.00 |
+| 7788 | SCOTT	| ANALYST | 7566 | 1982-12-09 | 3000.00 |	NULL |	20 | 40 | 120000.00 |
+| 7839 | KING	| PRESIDENT | NULL | 1981-11-17 | 5000.00 |	NULL |	10 | 41 | 123000.00 |
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1500.00 |	0.00 |	30 | 41 | 123000.00 |
+| 7876 | ADAMS	| CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |	20 | 40 | 120000.00 |
+| 7900 | JAMES	| CLERK	| 7698 | 1981-12-03 | 950.00 |	NULL |	30 | 41 | 123000.00 |
+| 7902 | FORD	| ANALYST | 7566 | 1981-12-03 | 3000.00 |	NULL |	20 | 41 | 123000.00 |
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1300.00 |	NULL |	10 | 41 | 123000.00 |
+| 4561 | sour_abh | president | NULL | 1981-04-02 | 99999.00 | 1000.00 |	50 | 42 | 126000.00 |
++	+	+	+	+	+	+	+	+	+	+
+15 rows in set (0.00 sec)
+
+
+
+
+
+
+
+10.	Write a function to compute the following. Function should take sal and hiredate as i/p and return the cost to company.
+
+
+DA = 15% Salary, HRA= 20% of Salary, TA= 8% of Salary.
+
+Special Allowance will be decided based on the service in the company.
+
+< 1 Year Nil
+
+>=1 Year< 2 Year 10% of Salary
+
+>=2 Year< 4 Year 20% of Salary
+
+>4 Year 30% of Salary
+
+
+Ans:
+
+delimiter //
+create function retnctc(psal double(9,2),pdate date) returns double(9,2) begin
+declare pctc double(9,2); declare spallwnc int default 0;
+ 
+if retnexp2(pdate)<=40 then set spallwnc=psal*1.1; elseif retnexp2(pdate)<=41 then set spallwnc=psal*1.2; else set spallwnc=psal*1.3;
+end if;
+set pctc=psal*(1+(0.15+0.2+0.08))+spallwnc; return pctc;
+end// delimiter ;
+
+
+
+mysql> select retnctc(5000,'1980-12-03');
++	+
+| retnctc(5000,'1980-12-03') |
++	+
+|	13650.00 |
++	+ 1 row in set (0.02 sec)
+
+
+
+
+11.	Write query to display empno,ename,sal,cost to company for all employees(note: use function written in question 10)
+
+Ans:
+
+mysql> select empno,ename,sal,retnctc(sal,hiredate)'cost to company' from emp;
++	+	+	-+	+
+| empno | ename | sal	| cost to company |
++	+	+	-+	+
+| 7369 | SMITH | 800.00 |	2184.00 |
+| 7499 | ALLEN | 1840.00 |	5023.20 |
+| 7521 | WARD	| 1437.50 |	3924.62 |
+| 7566 | JONES | 2975.00 |	8122.25 |
+| 7654 | MARTIN | 1437.50 |	3780.62 |
+| 7698 | BLAKE | 2850.00 |	7495.50 |
+| 7782 | CLARK | 2450.00 |	6443.50 |
+| 7788 | SCOTT | 3000.00 |	7590.00 |
+| 7839 | KING	| 5000.00 |	13150.00 |
+ 
+| 7844 | TURNER | 1725.00 |	4536.75 |
+| 7876 | ADAMS | 1100.00 |	2783.00 |
+| 7900 | JAMES | 950.00 |	2498.50 |
+| 7902 | FORD	| 3000.00 |	7890.00 |
+| 7934 | MILLER | 1300.00 |	3419.00 |
++	+	+	-+	+ 14 rows in set (0.00 sec)
+
+
+
+
+
+
+Q2. Write trigger
+
+1.	Write a tigger to store the old salary details in Emp _Back (Emp _Back has the same structure as emp table without any constraint) table.
+
+(note :create emp_back table before writing trigger)
+
+----- to create emp_back table
+
+
+create	table emp_back( empno int,
+ename varchar(20), oldsal decimal(9,2), newsal decimal(9,2)
+
+)
+
+(note :
+
+execute procedure written in Q8 and
+
+check the entries in EMP_back table after execution of the procedure)
+
+
+mysql> create table emp_back
+-> (
+ 
+-> empno int,
+-> ename varchar(20),
+-> oldsal double(9,2),
+-> newsal double(9,2),
+-> action varchar(20),
+-> user varchar(20),
+-> actdate date
+-> )//
+Query OK, 0 rows affected, 2 warnings (0.10 sec)
+
+
+mysql> delimiter //
+mysql> create trigger details after update on emp
+-> for each row
+-> begin
+-> insert into emp_back values (old.empno,old.ename,old.sal,new.sal,'update',user(),curdate());
+-> end//
+Query OK, 0 rows affected (0.03 sec)
+
+
+
+
+mysql>call updtsal;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from emp;
++	+	+	+	+	+	+	+	+
+| EMPNO | ENAME | job	| MGR | HIREDATE   | SAL	| COMM	| DEPTNO |
++	+	+	+	+	+	+	+	+
+| 7369 | SMITH | senior clerk | 7902 | 1980-12-17 | 2866.55 |	NULL |	20 |
+| 7499 | ALLEN | SALESMAN	| 7698 | 1981-02-20 | 6593.04 | 300.00 |	30 |
+| 7521 | WARD | SALESMAN	| 7698 | 1981-02-22 | 5150.82 | 500.00 |	30 |
+| 7566 | JONES | MANAGER	| 7839 | 1981-04-02 | 10659.96 |	NULL |	20 |
+| 7654 | MARTIN | SALESMAN	| 7698 | 1981-09-28 | 5150.82 | 1400.00 |	30 |
+| 7698 | BLAKE | MANAGER	| 7839 | 1981-05-01 | 10212.06 |	NULL |	30 |
+ 
+| 7782 | CLARK | MANAGER	| 7839 | 1981-06-09 | 8778.79 |	NULL |	10 |
+| 7788 | SCOTT | ANALYST	| 7566 | 1982-12-09 | 3000.00 |	NULL |	20 |
+| 7839 | KING | PRESIDENT	| NULL | 1981-11-17 | 17915.90 |	NULL |	10 |
+| 7844 | TURNER | SALESMAN	| 7698 | 1981-09-08 | 6180.98 |	0.00 |	30 |
+| 7876 | ADAMS | CLERK	| 7788 | 1983-01-12 | 1100.00 |	NULL |	20 |
+| 7900 | JAMES | CLERK	| 7698 | 1981-12-03 | 12197.21 |	NULL |	30 |
+| 7902 | FORD | ANALYST	| 7566 | 1981-12-03 | 38517.55 |	NULL |	20 |
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 4658.14 |	NULL |	10 |
++	+	+	+	+	+	+	+	+ 14 rows in set (0.00 sec)
+
+
+
+mysql> select * from emp_back;
++	+	+	+	+	+	+	+
+| empno | ename | oldsal | newsal | action | user	| actdate	|
++	+	+	+	+	+	+	+
+| 7369 | SMITH | 2388.79 | 2866.55 | update | root@localhost | 2023-04-14 |
+| 7499 | ALLEN | 5494.20 | 6593.04 | update | root@localhost | 2023-04-14 |
+| 7521 | WARD | 4292.35 | 5150.82 | update | root@localhost | 2023-04-14 |
+| 7566 | JONES | 8883.30 | 10659.96 | update | root@localhost | 2023-04-14 |
+| 7654 | MARTIN | 4292.35 | 5150.82 | update | root@localhost | 2023-04-14 |
+| 7698 | BLAKE | 8510.05 | 10212.06 | update | root@localhost | 2023-04-14 |
+| 7782 | CLARK | 7315.66 | 8778.79 | update | root@localhost | 2023-04-14 |
+| 7839 | KING | 14929.92 | 17915.90 | update | root@localhost | 2023-04-14 |
+| 7844 | TURNER | 5150.82 | 6180.98 | update | root@localhost | 2023-04-14 |
+| 7900 | JAMES | 8470.28 | 10164.34 | update | root@localhost | 2023-04-14 |
+| 7902 | FORD | 26748.30 | 32097.96 | update | root@localhost | 2023-04-14 |
+| 7900 | JAMES | 10164.34 | 12197.21 | update | root@localhost | 2023-04-14 |
+| 7902 | FORD | 32097.96 | 38517.55 | update | root@localhost | 2023-04-14 |
+| 7934 | MILLER | 3881.78 | 4658.14 | update | root@localhost | 2023-04-14 |
++	+	+	+	+	+	+	+ 14 rows in set (0.00 sec)
+
+
+
+
+
+2.	Write a trigger which add entry in audit table when user tries to insert or delete records in employee table store empno,name,username and date on which operation performed and which action is done insert or delete. in emp_audit table. create table before writing trigger.
+ 
+create table empaudit( empno int;
+ename varchar(20), username varchar(20); chdate date;
+action varchar(20)
+);
+Ans:
+mysql> create trigger trg before insert on emp
+-> for each row
+-> begin
+-> insert into empaudit values(new.empno,new.ename,user(),curdate(),'insert');
+-> end//
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> create trigger trg1 before delete on emp
+-> for each row
+-> begin
+-> insert into empaudit values(old.empno,old.ename,user(),curdate(),'delete');
+-> end//
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> delete from emp
+-> where ename="Smith";
+-> //
+Query OK, 1 row affected (0.04 sec)
+
+mysql> select * from empaudit//
++	+	+	+	+	+
+| empno | ename | username	| chdate	| action |
++	+	+	+	+	+
+| 7369 | SMITH | root@localhost | 2023-04-22 | delete |
++	+	+	+	+	+ 1 row in set (0.00 sec)
+
+mysql> insert into emp (empno,ename) values(7369,"Smith");
+-> //
+Query OK, 1 row affected (0.02 sec) mysql> select * from empaudit//
+ 
++	+	+	+	+	+
+| empno | ename | username	| chdate	| action |
++	+	+	+	+	+
+| 7369 | SMITH | root@localhost | 2023-04-22 | delete |
+| 7369 | Smith | root@localhost | 2023-04-22 | insert |
++	+	+	+	+	+ 2 rows in set (0.00 sec)
+
+mysql> select * from emp//
++	+	+	+	+	+	+	+	+
+| EMPNO | ENAME | JOB	| MGR | HIREDATE | SAL	| COMM	| DEPTNO |
++	+	+	+	+	+	+	+	+
+| 7499 | ALLEN | SALESMAN | 7698 | 1981-02-20 | 2000.00 | 300.00 |	30 |
+| 7521 | WARD | SALESMAN  | 7698 | 1981-02-22 | 1562.50 | 500.00 |	30 |
+| 7566 | JONES | MANAGER | 7839 | 1981-04-02 | 3718.75 |	NULL |	20 |
+| 7654 | MARTIN | SALESMAN | 7698 | 1981-09-28 | 1562.50 | 1400.00 |	30 |
+| 7698 | BLAKE | MANAGER | 7839 | 1981-05-01 | 3562.50 |	NULL |	30 |
+| 7782 | CLARK | MANAGER   | 7839 | 1981-06-09 | 3062.50 |	NULL |	10 |
+| 7788 | SCOTT | ANALYST   | 7566 | 1982-12-09 | 3750.00 |	NULL |	20 |
+| 7839 | KING | PRESIDENT | NULL | 1981-11-17 | 6250.00 |	NULL |	10 |
+| 7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1875.00 |	0.00 |	30 |
+| 7876 | ADAMS | CLERK	| 7788 | 1983-01-12 | 1375.00 |	NULL |	20 |
+| 7900 | JAMES | CLERK	| 7698 | 1981-12-03 | 1484.38 |	NULL |	30 |
+| 7902 | FORD   | ANALYST | 7566 | 1981-12-03 | 4687.50 |	NULL |	20 |
+| 7934 | MILLER | CLERK	| 7782 | 1982-01-23 | 1625.00 |	NULL |	10 |
+| 7369 | Smith | NULL	| NULL | NULL	|	NULL |	NULL | NULL |
++	+	+	+	+	+	+	+	+ 14 rows in set (0.00 sec)
+
+
+3.	Create table vehicle_history. Write a trigger to store old vehicleprice and new vehicle price in history table before you update price in vehicle table
+(note: use vehicle table). create table
+vehicle_history( vno int,
+vname varchar(20), oldprice decimal(9,2),
+ 
+newprice decimal(9,2), chdate date, username varchar(20)
+
+);
+
+Ans:
+
+
+create trigger veh before update on vehicle for each row
+begin
+insert into vehicle_history1 values(vid,vname,old.vprice,new.vprice,curdate(),user(),'update ');
+
+end//
+
+
+mysql> update vehicle
+-> set vprice=100000
+-> where vid=1;
+-> //
+Query OK, 1 row affected (0.03 sec)
+Rows matched: 1 Changed: 1 Warnings: 0
+
+
+mysql> select * from vehicle_history1//
++	+	+	+	+	+	+	+
+| vid | vname | oldvprice | newvprice | chdate	| username	| action |
++	+	+	+	+	+	+	+
+| NULL | NULL | 80000.00 | 100000.00 | 2023-04-22 | root@localhost | update |
++	+	+	+	+	+	+	+ 1 row in set (0.00 sec)
+ 
+
